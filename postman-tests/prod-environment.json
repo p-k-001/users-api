@@ -1,0 +1,9 @@
+{
+  "values": [
+    {
+      "key": "base_url",
+      "value": "https://test-api-one-gamma.vercel.app/",
+      "enabled": true
+    }
+  ]
+}

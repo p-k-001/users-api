@@ -1,0 +1,100 @@
+name: Test and Deploy to Vercel
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_TEST_API }}
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # - name: Install Node.js
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: "18"
+
+      # - name: Install Newman
+      #   run: npm install -g newman
+
+      # - name: Install Newman html reporter
+      #   run: npm install -g newman-reporter-html
+
+      # - name: Run Postman API Tests
+      #   run: newman run postman-tests/User-API-tst.postman_collection.json -e postman-tests/prod-environment.json
+
+      # - name: Install Java
+      #   uses: actions/setup-java@v3
+      #   with:
+      #     distribution: "temurin"
+      #     java-version: "21"
+
+      # - name: Download SoapUI
+      #   run: |
+      #     wget https://s3.amazonaws.com/downloads.eviware/soapuios/5.7.0/SoapUI-5.7.0-linux-bin.tar.gz
+      #     tar -xzf SoapUI-5.7.0-linux-bin.tar.gz
+      #     mv SoapUI-5.7.0 soapui
+
+      # - name: Run SoapUI tests
+      #   run: |
+      #     ./soapui/bin/testrunner.sh -r -j -f reports/ soapui-tests/Project-2-soapui-project.xml
+
+      # - name: Checkout Test Repo
+      #   uses: actions/checkout@v3
+      #   with:
+      #     repository: p-k-001/test-API-REST-assured
+      #     path: rest-tests
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Install Maven
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install -y maven
+
+      # - name: Run REST-Assured Tests
+      #   working-directory: rest-tests
+      #   run: mvn clean test
+
+      # - name: Checkout Playwright Tests Repo
+      #   uses: actions/checkout@v3
+      #   with:
+      #     repository: p-k-001/test-api-playwright
+      #     path: playwright-tests
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Install dependencies for Playwright tests
+      #   working-directory: playwright-tests
+      #   run: npm ci
+
+      # - name: Run Playwright tests
+      #   working-directory: playwright-tests
+      #   run: npm run test:prod
+
+  deploy:
+    # needs: test
+    runs-on: ubuntu-latest
+
+    # consoder removing Render deployment
+    # steps:
+    #   - name: Trigger Render Deployment
+    #     run: |
+    #       curl -X POST "$RENDER_DEPLOY_HOOK"
+    #     env:
+    #       RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Deploy to Vercel
+        run: vercel --prod --yes --token ${{ secrets.VERCEL_TEST_API }}
