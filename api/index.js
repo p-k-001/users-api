@@ -15,9 +15,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET;
 
+// TODO: move to config
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://test-api-ui-teal.vercel.app",
+  "https://users-ui-phi.vercel.app/",
 ];
 
 app.use(bodyParser.json());
