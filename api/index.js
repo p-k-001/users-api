@@ -19,6 +19,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const allowedOrigins = [
   "http://localhost:5173",
   "https://users-ui-phi.vercel.app",
+  "https://users.projects.icanbreakit.eu",
 ];
 
 app.use(bodyParser.json());
