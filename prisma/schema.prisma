@@ -14,18 +14,21 @@ datasource db {
 }
 
 model User {
-  id     Int    @id @default(autoincrement())
-  name   String
+  id      Int      @id @default(autoincrement())
+  name    String
   // TODO: consider add unique flag
   // email  String @unique
-  email  String
-  age    Int
-  role   String
-  adult  Boolean
+  email   String
+  age     Int
+  role    String
+  adult   Boolean
+  ownerId Int // who created this record
+  owner    AuthUser @relation("UserOwner", fields: [ownerId], references: [id], onDelete: Cascade)
 }
 
 model AuthUser {
   id           Int    @id @default(autoincrement())
   email        String @unique
   passwordHash String
+  users    User[]  @relation("UserOwner")
 }

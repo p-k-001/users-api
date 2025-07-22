@@ -101,9 +101,13 @@ app.get("/hello", (req, res) => {
  *                     type: boolean
  *                     description: Whether the user is an adult (18+)
  */
-app.get("/users", async (req, res) => {
+app.get("/users", authenticateToken, async (req, res) => {
   try {
-    const users = await prisma.user.findMany();
+    const users = await prisma.user.findMany({
+      where: {
+        ownerId: req.user.id, // only logged-in user’s records
+      },
+    });
     res.json(users);
   } catch (err) {
     console.error("Failed to fetch users:", err);
@@ -156,12 +160,17 @@ app.get("/users", async (req, res) => {
  *                   type: string
  *                   example: User not found
  */
-app.get("/users/:id", async (req, res) => {
+app.get("/users/:id", authenticateToken, async (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) return res.status(400).json({ message: "Invalid ID" });
 
   try {
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findUnique({
+      where: {
+        id,
+        ownerId: req.user.id, // ensure ownership
+      },
+    });
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json(user);
   } catch (err) {
@@ -273,12 +282,19 @@ app.post(
       age: age,
       role: req.body.role,
       adult: isAdult(age),
+      owner: {
+        connect: { id: req.user.id }, // attach to logged-in AuthUser
+      },
     };
 
-    // I need id from db
-    const newUserFromDb = await prisma.user.create({ data: newUser });
+    try {
+      const newUserFromDb = await prisma.user.create({ data: newUser });
 
-    return res.status(201).json(newUserFromDb);
+      return res.status(201).json(newUserFromDb);
+    } catch (err) {
+      console.error("Failed to create user:", err);
+      res.status(500).json({ message: "Failed to create user" });
+    }
   }
 );
 
@@ -415,6 +431,12 @@ app.put(
     }
 
     try {
+      // Ensure the record belongs to the logged-in user
+      const existing = await prisma.user.findFirst({
+        where: { id, ownerId: req.user.id },
+      });
+      if (!existing) return res.status(404).json({ message: "User not found" });
+
       const updatedUser = await prisma.user.update({
         where: { id },
         data: updateData,
@@ -460,6 +482,12 @@ app.delete("/users/:id", authenticateToken, async (req, res) => {
   if (isNaN(id)) return res.status(400).json({ message: "Invalid ID" });
 
   try {
+    // Ensure ownership
+    const existing = await prisma.user.findFirst({
+      where: { id, ownerId: req.user.id },
+    });
+    if (!existing) return res.status(404).json({ message: "User not found" });
+
     await prisma.user.delete({ where: { id } });
     res.status(204).send();
   } catch (err) {
@@ -482,7 +510,11 @@ app.delete("/users/:id", authenticateToken, async (req, res) => {
  */
 app.delete("/users", authenticateToken, async (req, res) => {
   try {
-    await prisma.user.deleteMany();
+    await prisma.user.deleteMany({
+      where: {
+        ownerId: req.user.id, // delete only current owner’s users
+      },
+    });
     res.status(204).send();
   } catch (err) {
     console.error("Failed to delete all users:", err);
