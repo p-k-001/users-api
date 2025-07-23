@@ -32,6 +32,16 @@ const swaggerOptions = {
       title: "My API",
       version: "1.0.0",
     },
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+    security: [{ bearerAuth: [] }],
   },
   apis: ["./api/**/*.js"],
 };
@@ -44,7 +54,21 @@ app.get("/api-docs/swagger.json", (req, res) => {
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// authentication middleware
+/** Centralized Prisma error handler */
+function handlePrismaError(res, err, action = "Operation") {
+  if (err.code === "P2025") {
+    return res
+      .status(404)
+      .json({ message: `${action} failed: record not found` });
+  }
+  console.error(`${action} error:`, err);
+  const status = err.code ? 500 : 400;
+  return res.status(status).json({ message: `${action} failed` });
+}
+
+/**
+ * JWT authentication middleware
+ */
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
@@ -57,6 +81,9 @@ const authenticateToken = (req, res, next) => {
     next();
   });
 };
+
+// Helper: Adult check
+const isAdult = (age) => age >= 18;
 
 /**
  * @openapi
@@ -75,7 +102,9 @@ app.get("/hello", (req, res) => {
  * @openapi
  * /users:
  *   get:
- *     summary: Get all users
+ *     summary: Get all users for logged-in owner
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Success
@@ -104,14 +133,11 @@ app.get("/hello", (req, res) => {
 app.get("/users", authenticateToken, async (req, res) => {
   try {
     const users = await prisma.user.findMany({
-      where: {
-        ownerId: req.user.id, // only logged-in user’s records
-      },
+      where: { ownerId: req.user.id },
     });
     res.json(users);
   } catch (err) {
-    console.error("Failed to fetch users:", err);
-    res.status(500).json({ message: "Failed to fetch users" });
+    handlePrismaError(res, err, "Fetch users");
   }
 });
 
@@ -119,7 +145,9 @@ app.get("/users", authenticateToken, async (req, res) => {
  * @openapi
  * /users/{id}:
  *   get:
- *     summary: Get a user by ID
+ *     summary: Get a user by ID (only if owned)
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - name: id
  *         in: path
@@ -165,17 +193,13 @@ app.get("/users/:id", authenticateToken, async (req, res) => {
   if (isNaN(id)) return res.status(400).json({ message: "Invalid ID" });
 
   try {
-    const user = await prisma.user.findUnique({
-      where: {
-        id,
-        ownerId: req.user.id, // ensure ownership
-      },
+    const user = await prisma.user.findFirst({
+      where: { id, ownerId: req.user.id },
     });
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json(user);
   } catch (err) {
-    console.error("Failed to fetch user:", err);
-    res.status(500).json({ message: "Failed to fetch user" });
+    handlePrismaError(res, err, "Fetch user");
   }
 });
 
@@ -183,7 +207,9 @@ app.get("/users/:id", authenticateToken, async (req, res) => {
  * @openapi
  * /users:
  *   post:
- *     summary: Create a new user
+ *     summary: Create a new user for the logged-in owner
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -282,9 +308,7 @@ app.post(
       age: age,
       role: req.body.role,
       adult: isAdult(age),
-      owner: {
-        connect: { id: req.user.id }, // attach to logged-in AuthUser
-      },
+      owner: { connect: { id: req.user.id } },
     };
 
     try {
@@ -292,8 +316,7 @@ app.post(
 
       return res.status(201).json(newUserFromDb);
     } catch (err) {
-      console.error("Failed to create user:", err);
-      res.status(500).json({ message: "Failed to create user" });
+      handlePrismaError(res, err, "Create user");
     }
   }
 );
@@ -302,7 +325,9 @@ app.post(
  * @openapi
  * /users/{id}:
  *   put:
- *     summary: Update user details
+ *     summary: Update user details (only if owned)
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - name: id
  *         in: path
@@ -393,22 +418,22 @@ app.put(
   authenticateToken,
   [
     body("name")
-      .optional({ checkFalsy: true })
+      .optional()
       .isString()
       .notEmpty()
       .withMessage("Name is required"),
     body("email")
-      .optional({ checkFalsy: true })
+      .optional()
       .notEmpty()
       .withMessage("Email is required")
       .isEmail()
       .withMessage("Valid email format is required"),
     body("age")
-      .optional({ nullable: true })
+      .optional()
       .isInt({ min: 0, max: 125 })
       .withMessage("Age must be between 0 and 125"),
     body("role")
-      .optional({ checkFalsy: true })
+      .optional()
       .isIn(["admin", "user"])
       .withMessage("Role must be admin or user"),
   ],
@@ -443,11 +468,7 @@ app.put(
       });
       res.json(updatedUser);
     } catch (err) {
-      if (err.code === "P2025") {
-        return res.status(404).json({ message: "User not found" });
-      }
-      console.error("Failed to update user:", err);
-      res.status(500).json({ message: "Failed to update user" });
+      handlePrismaError(res, err, "Update user");
     }
   }
 );
@@ -456,7 +477,9 @@ app.put(
  * @openapi
  * /users/{id}:
  *   delete:
- *     summary: Delete a user
+ *     summary: Delete a user (only if owned)
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - name: id
  *         in: path
@@ -491,11 +514,7 @@ app.delete("/users/:id", authenticateToken, async (req, res) => {
     await prisma.user.delete({ where: { id } });
     res.status(204).send();
   } catch (err) {
-    if (err.code === "P2025") {
-      return res.status(404).json({ message: "User not found" });
-    }
-    console.error("Failed to delete user:", err);
-    res.status(500).json({ message: "Failed to delete user" });
+    handlePrismaError(res, err, "Delete user");
   }
 });
 
@@ -503,22 +522,23 @@ app.delete("/users/:id", authenticateToken, async (req, res) => {
  * @openapi
  * /users:
  *   delete:
- *     summary: Delete all users
+ *     summary: Delete all users for current user
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       204:
  *         description: All users deleted
  */
 app.delete("/users", authenticateToken, async (req, res) => {
   try {
-    await prisma.user.deleteMany({
+    const result = await prisma.user.deleteMany({
       where: {
-        ownerId: req.user.id, // delete only current owner’s users
+        ownerId: req.user.id,
       },
     });
-    res.status(204).send();
+    res.status(200).json({ deleted: result.count });
   } catch (err) {
-    console.error("Failed to delete all users:", err);
-    res.status(500).json({ message: "Failed to delete all users" });
+    handlePrismaError(res, err, "Delete all users");
   }
 });
 
@@ -568,8 +588,7 @@ app.post("/register", async (req, res) => {
 
     res.status(201).json({ message: "User registered", email });
   } catch (err) {
-    console.error("Registration error:", err);
-    res.status(500).json({ message: "Registration failed" });
+    handlePrismaError(res, err, "Registration");
   }
 });
 
@@ -616,14 +635,9 @@ app.post("/login", async (req, res) => {
     });
     res.json({ token });
   } catch (err) {
-    console.error("Login error:", err);
-    res.status(500).json({ message: "Login failed" });
+    handlePrismaError(res, err, "Login");
   }
 });
-
-const isAdult = (age) => {
-  return age >= 18;
-};
 
 // Start server
 app.listen(PORT, () => {
