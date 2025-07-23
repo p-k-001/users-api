@@ -17,7 +17,12 @@
     },
     "/users": {
       "get": {
-        "summary": "Get all users",
+        "summary": "Get all users for logged-in owner",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -60,7 +65,12 @@
         }
       },
       "post": {
-        "summary": "Create a new user",
+        "summary": "Create a new user for the logged-in owner",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -166,7 +176,12 @@
         }
       },
       "delete": {
-        "summary": "Delete all users",
+        "summary": "Delete all users for current user",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "204": {
             "description": "All users deleted"
@@ -176,7 +191,12 @@
     },
     "/users/{id}": {
       "get": {
-        "summary": "Get a user by ID",
+        "summary": "Get a user by ID (only if owned)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -243,7 +263,12 @@
         }
       },
       "put": {
-        "summary": "Update user details",
+        "summary": "Update user details (only if owned)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -375,7 +400,12 @@
         }
       },
       "delete": {
-        "summary": "Delete a user",
+        "summary": "Delete a user (only if owned)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -409,24 +439,72 @@
         }
       }
     },
-    "/next-id": {
-      "get": {
-        "summary": "Get next id",
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "next-id": {
-                      "type": "integer"
-                    }
+    "/register": {
+      "post": {
+        "summary": "Register a new user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
                   }
                 }
               }
             }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered"
+          },
+          "400": {
+            "description": "Email already exists"
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "summary": "Login and get a token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful login"
+          },
+          "401": {
+            "description": "Invalid credentials"
           }
         }
       }
