@@ -72,11 +72,23 @@ function handlePrismaError(res, err, action = "Operation") {
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
-  if (!token) return res.status(401).json({ message: "No token provided" });
+
+  if (!token) {
+    return res.status(401).json({
+      errors: { message: "No token provided", code: "NO_TOKEN" },
+    });
+  }
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err)
-      return res.status(403).json({ errors: { message: "Invalid token" } });
+    if (err) {
+      return res.status(403).json({
+        errors: {
+          message: "Invalid or expired token - log out and log in again",
+          code: "INVALID_TOKEN",
+        },
+      });
+    }
+
     req.user = user;
     next();
   });
@@ -631,7 +643,7 @@ app.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
-      expiresIn: "1h",
+      expiresIn: "300000", // 300000ms = 5minutes
     });
     res.json({ token });
   } catch (err) {
