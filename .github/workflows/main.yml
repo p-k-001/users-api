@@ -30,11 +30,11 @@ jobs:
       # - name: Run Postman API Tests
       #   run: newman run postman-tests/User-API-tst.postman_collection.json -e postman-tests/prod-environment.json
 
-      # - name: Install Java
-      #   uses: actions/setup-java@v3
-      #   with:
-      #     distribution: "temurin"
-      #     java-version: "21"
+      - name: Install Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "21"
 
       - name: Download SoapUI
         run: |
@@ -78,7 +78,7 @@ jobs:
       #   run: npm run test:prod
 
   deploy:
-    # needs: test
+    needs: test
     runs-on: ubuntu-latest
 
     # consoder removing Render deployment
