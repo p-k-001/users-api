@@ -18,12 +18,42 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // TODO: move to config
 const allowedOrigins = [
   "http://localhost:5173",
+  "https://users-dev.projects.icanbreakit.eu",
   "https://users-ui-phi.vercel.app",
   "https://users.projects.icanbreakit.eu",
 ];
 
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  allowedHeaders: [
+    "Origin",
+    "X-Requested-With",
+    "Content-Type",
+    "Accept",
+    "Authorization",
+    "Cache-Control",
+    "Pragma",
+  ],
+  exposedHeaders: ["Authorization"],
+  maxAge: 86400, // 24 hours
+};
+
+// Handle preflight requests first
+app.options("*", cors(corsOptions));
+
 app.use(bodyParser.json());
-app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(cors(corsOptions));
 
 const swaggerOptions = {
   definition: {
