@@ -15,14 +15,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// logging
-app.use((req, res, next) => {
-  console.log(`📥 ${new Date().toISOString()} - ${req.method} ${req.url}`);
-  console.log(`📍 Origin: ${req.headers.origin || "no origin"}`);
-  console.log(`📋 Headers:`, Object.keys(req.headers));
-  next();
-});
-
 // TODO: move to config
 const allowedOrigins = [
   "http://localhost:5173",
