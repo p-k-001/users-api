@@ -49,6 +49,12 @@ const corsOptions = {
   maxAge: 86400, // 24 hours
 };
 
+// add logging
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url} - Origin: ${req.headers.origin}`);
+  next();
+});
+
 // Handle preflight requests first
 app.options("*", cors(corsOptions));
 
