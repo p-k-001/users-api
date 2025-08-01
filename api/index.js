@@ -18,6 +18,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // TODO: move to config
 const allowedOrigins = [
   "http://localhost:5173",
+  "https://users-dev.projects.icanbreakit.eu",
   "https://users-ui-phi.vercel.app",
   "https://users.projects.icanbreakit.eu",
 ];
