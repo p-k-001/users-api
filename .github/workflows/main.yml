@@ -20,9 +20,12 @@ jobs:
         with:
           node-version: 20
 
-      # Set DATABASE_URL environment variable from GitHub Secrets
-      - name: Set environment variables
-        run: echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> $GITHUB_ENV
+      - name: Install wait-on
+        run: npm install --save-dev wait-on
+
+      #   # Set DATABASE_URL environment variable from GitHub Secrets
+      #   - name: Set environment variables
+      #     run: echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> $GITHUB_ENV
 
       - name: Install dependencies
         env:
