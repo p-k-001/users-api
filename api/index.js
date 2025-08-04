@@ -137,7 +137,7 @@ const isAdult = (age) => age >= 18;
  *         description: returns greeting
  */
 app.get("/hello", (req, res) => {
-  res.json({ message: "Hello, API Testing!" });
+  res.status(200).json({ message: "Hello, API Testing!" });
 });
 
 /**
