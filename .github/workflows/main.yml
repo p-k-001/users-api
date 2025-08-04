@@ -1,4 +1,4 @@
-name: backend CI/CD - Debug Version
+name: backend CI/CD
 
 on:
   push:
@@ -23,87 +23,27 @@ jobs:
       - name: Install wait-on
         run: npm install --save-dev wait-on
 
+      #   # Set DATABASE_URL environment variable from GitHub Secrets
+      #   - name: Set environment variables
+      #     run: echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> $GITHUB_ENV
+
       - name: Install dependencies
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
         run: npm ci
-
-      # Add health check endpoint to your app first!
-      - name: Add health check to index.js
-        run: |
-          # Backup original file
-          cp api/index.js api/index.js.backup
-
-          # Add health check before app.listen
-          sed -i '/app\.listen/i\
-          // Health check endpoint\
-          app.get("/health", (req, res) => {\
-            res.status(200).json({ status: "OK", timestamp: new Date().toISOString() });\
-          });\
-          \
-          // Error handling\
-          process.on("uncaughtException", (error) => {\
-            console.error("Uncaught Exception:", error);\
-          });\
-          \
-          process.on("unhandledRejection", (reason, promise) => {\
-            console.error("Unhandled Rejection at:", promise, "reason:", reason);\
-          });' api/index.js
 
       - name: Start backend server in the background
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           npm start > server.log 2>&1 &
-          SERVER_PID=$!
-          echo "Server started with PID: $SERVER_PID"
-          echo $SERVER_PID > server.pid
-          sleep 10
-
-      - name: Debug server status
-        run: |
-          echo "=== Server Process ==="
-          if [ -f server.pid ]; then
-            PID=$(cat server.pid)
-            ps -p $PID || echo "Server process not running"
-          fi
-
-          echo "=== All Node Processes ==="
-          ps aux | grep node || echo "No node processes found"
-
-          echo "=== Network Status ==="
-          netstat -tlnp | grep 3000 || echo "Port 3000 not listening"
-
-          echo "=== Server Logs ==="
-          cat server.log
-
-          echo "=== Test Local Curl ==="
-          curl -v http://localhost:3000/health || echo "Health check failed"
-          curl -v http://127.0.0.1:3000/health || echo "127.0.0.1 health check failed"
-
+          echo "Server started"
       - name: Wait for server to be ready
         run: |
-          echo "Waiting for health endpoint..."
-          npx wait-on http://localhost:3000/health --timeout 60000 --interval 2000 || (
-            echo "=== FINAL DEBUG INFO ==="
-            echo "Server not responding after 60 seconds"
-            cat server.log
-            ps aux | grep node
-            netstat -tlnp | grep 3000
-            exit 1
-          )
-
-      - name: Test basic API endpoint
-        run: |
-          echo "Testing basic connectivity..."
-          curl -f http://localhost:3000/health || (echo "Health check failed" && exit 1)
-          echo "Health check passed!"
+          npx wait-on http://localhost:3000 --timeout 30000 || (echo "Server not responding" && cat server.log && exit 1)
 
       - name: Show server logs (for debug)
-        if: always()
-        run: |
-          echo "=== Final Server Logs ==="
-          cat server.log
+        if: failure()
+        run: cat server.log
 
       - name: Install Java 11
         uses: actions/setup-java@v4
@@ -120,3 +60,24 @@ jobs:
       - name: Run SoapUI tests
         run: |
           ./soapui/bin/testrunner.sh -r -j -f reports/ soapui-tests/users-soapui-tests.xml
+
+#   playwright-tests:
+#     if: startsWith(github.ref, 'refs/heads/feature/')
+#     name: Playwright Tests (feature)
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout Playwright Tests Repo
+#         uses: actions/checkout@v4
+#         with:
+#           repository: p-k-001/users-playwright-tests
+#           path: tests
+#           token: ${{ secrets.GITHUB_TOKEN }}
+
+#       - name: Install dependencies for Playwright tests
+#         working-directory: tests
+#         run: npm ci
+
+#       - name: Run Playwright tests
+#         working-directory: tests
+#         run: npm run test:ci:local
