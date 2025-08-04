@@ -87,6 +87,31 @@ jobs:
           name: playwright-report-local
           path: playwright-report/
           retention-days: 5
+
+  deploy-preview:
+    if: github.base_ref == 'develop'
+    needs: push-to-develop
+    name: Deploy to Vercel Preview
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Vercel Preview
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    #   - name: Install Vercel CLI
+    #     run: npm install -g vercel
+
+    #   - name: Deploy to Vercel Preview (Staging)
+    #     working-directory: ./
+    #     run: vercel --token ${{ secrets.VERCEL_TOKEN }} --yes
+    #     env:
+    #       NODE_ENV: staging
+
   push-to-master:
     if: github.base_ref == 'master'
     name: Test against staging
