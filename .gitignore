@@ -138,3 +138,6 @@ dist
 .vercel
 
 /generated/prisma
+
+# tmp dir
+tmp/
