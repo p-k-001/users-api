@@ -81,6 +81,12 @@ jobs:
         env:
           BASE_URL: http://localhost:3000
         run: npm run test:ci:local
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-local
+          path: playwright-report/
+          retention-days: 30
   push-to-master:
     if: github.base_ref == 'master'
     name: Test against staging
@@ -139,5 +145,11 @@ jobs:
       - name: Run Playwright tests
         working-directory: playwright-tests
         env:
-          baseURL: https://users-api-dev.projects.icanbreakit.eu
+          BASE_URL: https://users-api-dev.projects.icanbreakit.eu
         run: npm run test:ci:local
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-staging
+          path: playwright-report/
+          retention-days: 30
