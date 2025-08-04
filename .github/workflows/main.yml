@@ -62,18 +62,12 @@ jobs:
         run: |
           ./soapui/bin/testrunner.sh -r -j -f reports/ soapui-tests/users-soapui-tests.xml
 
-  playwright-tests:
-    name: Playwright Tests (feature)
-    runs-on: ubuntu-latest
-
-    steps:
       - name: Checkout Playwright Tests Repo
         uses: actions/checkout@v4
         with:
           repository: p-k-001/users-playwright-tests
           path: tests
           token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Install dependencies for Playwright tests
         working-directory: tests
         run: npm ci
