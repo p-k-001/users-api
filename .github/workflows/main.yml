@@ -139,5 +139,5 @@ jobs:
       - name: Run Playwright tests
         working-directory: playwright-tests
         env:
-          BASE_URL: https://users-api-dev.projects.icanbreakit.eu
+          baseURL: https://users-api-dev.projects.icanbreakit.eu
         run: npm run test:ci:local
