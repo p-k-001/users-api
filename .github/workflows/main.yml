@@ -68,9 +68,17 @@ jobs:
           repository: p-k-001/users-playwright-tests
           path: playwright-tests
           token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Install dependencies for Playwright tests
         working-directory: playwright-tests
-        run: npm ci
+        run: |
+          npm cache clean --force
+          npm ci
+          cat package.json  # Debug: show the actual package.json content
+
+      - name: List available scripts (debug)
+        working-directory: playwright-tests
+        run: npm run
 
       - name: Run Playwright tests
         working-directory: playwright-tests
