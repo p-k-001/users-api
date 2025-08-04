@@ -1,6 +1,11 @@
-const envPath =
-  process.env.NODE_ENV === "production" ? ".env.production" : ".env.local";
+const envPath = {
+  production: ".env.production",
+  staging: ".env.staging",
+  development: ".env.local",
+}[process.env.NODE_ENV || "development"];
+
 require("dotenv").config({ path: envPath });
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -137,7 +142,7 @@ const isAdult = (age) => age >= 18;
  *         description: returns greeting
  */
 app.get("/hello", (req, res) => {
-  res.json({ message: "Hello, API Testing!" });
+  res.status(200).json({ message: "Hello, API Testing!" });
 });
 
 /**
@@ -682,7 +687,7 @@ app.post("/login", async (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running at port ${PORT}`);
 });
 
