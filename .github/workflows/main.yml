@@ -20,8 +20,12 @@ jobs:
         with:
           node-version: 20
 
+      # Set DATABASE_URL environment variable from GitHub Secrets
+      - name: Set environment variables
+        run: echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> $GITHUB_ENV
+
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
   soapUI-tests:
     if: startsWith(github.ref, 'refs/heads/feature/')
