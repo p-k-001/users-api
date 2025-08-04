@@ -88,6 +88,9 @@ jobs:
           path: playwright-report/
           retention-days: 5
 
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
       - name: Deploy to Vercel Preview (Staging)
         run: |
           npx vercel --token ${{ secrets.VERCEL_TOKEN }} \
