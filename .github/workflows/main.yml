@@ -38,7 +38,7 @@ jobs:
           echo "Server started"
       - name: Wait for server to be ready
         run: |
-          npx wait-on http://localhost:3000/users --timeout 30000 || (echo "Server not responding" && cat server.log && exit 1)
+          npx wait-on http://localhost:3000/hello --timeout 30000 || (echo "Server not responding" && cat server.log && exit 1)
 
       - name: Show server logs (for debug)
         if: failure()
