@@ -82,7 +82,7 @@ jobs:
 
       - name: Install Playwright browsers
         working-directory: playwright-tests
-        run: npx playwright install
+        run: npx playwright install chromium
 
       - name: Run Playwright tests
         working-directory: playwright-tests
