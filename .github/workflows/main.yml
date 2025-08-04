@@ -63,7 +63,6 @@ jobs:
           ./soapui/bin/testrunner.sh -r -j -f reports/ soapui-tests/users-soapui-tests.xml
 
   playwright-tests:
-    if: startsWith(github.ref, 'refs/heads/feature/')
     name: Playwright Tests (feature)
     runs-on: ubuntu-latest
 
