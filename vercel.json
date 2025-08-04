@@ -1,15 +1,4 @@
 {
   "version": 2,
-  "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
-
-  "git": {
-    "deploymentEnabled": {
-      "master": true,
-      "develop": true
-    }
-  },
-  "github": {
-    "deploymentEnabled": true,
-    "autoAlias": true
-  }
+  "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
 }
