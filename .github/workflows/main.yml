@@ -87,6 +87,16 @@ jobs:
           name: playwright-report-local
           path: playwright-report/
           retention-days: 5
+
+      - name: Deploy to Vercel Preview (Staging)
+        run: |
+          npx vercel --token ${{ secrets.VERCEL_TOKEN }} \
+                     --org-id ${{ secrets.VERCEL_ORG_ID }} \
+                     --project-id ${{ secrets.VERCEL_PROJECT_ID }} \
+                     --yes
+        env:
+          NODE_ENV: staging
+
   push-to-master:
     if: github.base_ref == 'master'
     name: Test against staging
