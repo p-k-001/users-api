@@ -6,6 +6,10 @@ on:
       - "feature/**"
       - "develop"
       - "master"
+  pull_request:
+    branches:
+      - "develop"
+      - "master"
 
 jobs:
   test-backend:
