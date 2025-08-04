@@ -1,19 +1,15 @@
 name: backend CI/CD v0.1
 
 on:
-  push:
-    branches:
-      - "feature/**"
-      - "develop"
-      - "master"
   pull_request:
     branches:
       - "develop"
       - "master"
 
 jobs:
-  test-backend:
-    name: Install app and test it
+  push-to-develop:
+    if: github.base_ref == 'develop'
+    name: Test against local
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL_DEV }}
@@ -31,10 +27,6 @@ jobs:
       - name: Install wait-on
         run: npm install --save-dev wait-on
 
-      #   # Set DATABASE_URL environment variable from GitHub Secrets
-      #   - name: Set environment variables
-      #     run: echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> $GITHUB_ENV
-
       - name: Install dependencies
         run: npm ci
 
@@ -44,11 +36,7 @@ jobs:
           echo "Server started"
       - name: Wait for server to be ready
         run: |
-          npx wait-on http://localhost:3000/hello --timeout 30000 || (echo "Server not responding" && cat server.log && exit 1)
-
-      - name: Show server logs (for debug)
-        if: failure()
-        run: cat server.log
+          npx wait-on http://localhost:3000/hello --timeout 30000
 
       - name: Install Java 11
         uses: actions/setup-java@v4
@@ -64,7 +52,7 @@ jobs:
 
       - name: Run SoapUI tests
         run: |
-          ./soapui/bin/testrunner.sh -r -j -f reports/ soapui-tests/users-soapui-tests.xml
+          ./soapui/bin/testrunner.sh -r -j -f reports/ -P baseUrl=http://localhost:3000 soapui-tests/users-soapui-tests.xml
 
       - name: Checkout Playwright Tests Repo
         uses: actions/checkout@v4
@@ -90,4 +78,66 @@ jobs:
 
       - name: Run Playwright tests
         working-directory: playwright-tests
+        env:
+          BASE_URL: http://localhost:3000
+        run: npm run test:ci:local
+  push-to-master:
+    if: github.base_ref == 'master'
+    name: Test against staging
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL_DEV }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET_DEV }}
+      NODE_ENV: ${{ secrets.NODE_ENV_DEV }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "11"
+
+      - name: Download SoapUI
+        run: |
+          wget https://s3.amazonaws.com/downloads.eviware/soapuios/5.7.0/SoapUI-5.7.0-linux-bin.tar.gz
+          tar -xzf SoapUI-5.7.0-linux-bin.tar.gz
+          mv SoapUI-5.7.0 soapui
+
+      - name: Run SoapUI tests
+        run: |
+          ./soapui/bin/testrunner.sh -r -j -f reports/ -P baseUrl=https://users-api-dev.projects.icanbreakit.eu soapui-tests/users-soapui-tests.xml
+
+      - name: Checkout Playwright Tests Repo
+        uses: actions/checkout@v4
+        with:
+          repository: p-k-001/users-playwright-tests
+          path: playwright-tests
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies for Playwright tests
+        working-directory: playwright-tests
+        run: |
+          npm cache clean --force
+          npm ci
+          cat package.json  # Debug: show the actual package.json content
+
+      - name: List available scripts (debug)
+        working-directory: playwright-tests
+        run: npm run
+
+      - name: Install Playwright browsers
+        working-directory: playwright-tests
+        run: npx playwright install chromium
+
+      - name: Run Playwright tests
+        working-directory: playwright-tests
+        env:
+          BASE_URL: https://users-api-dev.projects.icanbreakit.eu
         run: npm run test:ci:local
