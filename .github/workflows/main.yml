@@ -28,7 +28,8 @@ jobs:
       #     run: echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> $GITHUB_ENV
 
       - name: Install dependencies
-
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm ci
 
       - name: Start backend server in the background
