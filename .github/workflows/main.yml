@@ -86,7 +86,7 @@ jobs:
         with:
           name: playwright-report-local
           path: playwright-report/
-          retention-days: 30
+          retention-days: 5
   push-to-master:
     if: github.base_ref == 'master'
     name: Test against staging
@@ -152,4 +152,4 @@ jobs:
         with:
           name: playwright-report-staging
           path: playwright-report/
-          retention-days: 30
+          retention-days: 5
