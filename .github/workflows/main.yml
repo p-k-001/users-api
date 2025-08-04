@@ -1,4 +1,4 @@
-name: backend CI/CD
+name: backend CI/CD v0.1
 
 on:
   push:
@@ -79,6 +79,10 @@ jobs:
       - name: List available scripts (debug)
         working-directory: playwright-tests
         run: npm run
+
+      - name: Install Playwright browsers
+        working-directory: playwright-tests
+        run: npx playwright install
 
       - name: Run Playwright tests
         working-directory: playwright-tests
