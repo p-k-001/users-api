@@ -29,7 +29,7 @@ jobs:
 
       - name: Install dependencies
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL_DEV }}
         run: npm ci
 
       - name: Start backend server in the background

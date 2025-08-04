@@ -1,6 +1,11 @@
-const envPath =
-  process.env.NODE_ENV === "production" ? ".env.production" : ".env.local";
+const envPath = {
+  production: ".env.production",
+  staging: ".env.staging",
+  development: ".env.local",
+}[process.env.NODE_ENV || "development"];
+
 require("dotenv").config({ path: envPath });
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");

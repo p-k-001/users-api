@@ -4,8 +4,9 @@
   "description": "A simple Express.js server for API testing with Postman",
   "main": "index.js",
   "scripts": {
-    "start": "node api/index.js",
-    "dev": "nodemon api/index.js",
+    "dev": "cross-env NODE_ENV=development nodemon api/index.js",
+    "start:staging": "cross-env NODE_ENV=staging node api/index.js",
+    "start": "cross-env NODE_ENV=production node api/index.js",
     "generate-swagger": "node generate-swagger.js",
     "postinstall": "prisma generate && prisma migrate deploy"
   },
@@ -23,6 +24,7 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "cross-env": "^10.0.0",
     "nodemon": "^3.1.9"
   }
 }
