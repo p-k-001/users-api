@@ -34,7 +34,8 @@ jobs:
 
       - name: Start backend server in the background
         run: |
-          npm start
+          npm start > server.log 2>&1 &
+          echo "Server started"
       - name: Wait for server to be ready
         run: |
           npx wait-on http://localhost:3000 --timeout 30000 || (echo "Server not responding" && cat server.log && exit 1)
