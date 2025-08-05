@@ -1,4 +1,4 @@
-name: Deploy on Push to Main Branches
+name: Deploy on Push to Main Branches v0.1
 
 on:
   push:
