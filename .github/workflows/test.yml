@@ -8,7 +8,7 @@ on:
 
 jobs:
   test-on-local:
-    if: github.ref_name == 'develop'
+    if: github.base_ref == 'develop'
     name: Test against local
     runs-on: ubuntu-latest
     env:
@@ -85,7 +85,7 @@ jobs:
           retention-days: 5
 
   test-on-staging:
-    if: github.ref_name == 'master'
+    if: github.base_ref == 'master'
     name: Test against staging
     runs-on: ubuntu-latest
     env:
