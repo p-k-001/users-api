@@ -1,13 +1,13 @@
-name: backend CI/CD v0.2
+name: Run Tests on PR
 
 on:
-  push:
+  pull_request:
     branches:
-      - "develop"
-      - "master"
+      - develop
+      - master
 
 jobs:
-  push-to-develop:
+  test-on-local:
     if: github.ref_name == 'develop'
     name: Test against local
     runs-on: ubuntu-latest
@@ -84,22 +84,7 @@ jobs:
           path: playwright-report/
           retention-days: 5
 
-  deploy-preview:
-    if: github.ref_name == 'develop'
-    needs: push-to-develop
-    name: Deploy to Vercel Preview
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Deploy to Vercel Preview
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-
-  push-to-master:
+  test-on-staging:
     if: github.ref_name == 'master'
     name: Test against staging
     runs-on: ubuntu-latest
@@ -161,17 +146,3 @@ jobs:
           name: playwright-report-staging
           path: playwright-report/
           retention-days: 5
-  deploy-master:
-    if: github.ref_name == 'master'
-    needs: push-to-master
-    name: Deploy to Vercel Production
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Deploy to Vercel Production
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
