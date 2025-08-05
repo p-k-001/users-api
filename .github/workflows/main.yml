@@ -68,10 +68,6 @@ jobs:
           npm ci
           cat package.json  # Debug: show the actual package.json content
 
-      - name: List available scripts (debug)
-        working-directory: playwright-tests
-        run: npm run
-
       - name: Install Playwright browsers
         working-directory: playwright-tests
         run: npx playwright install chromium
@@ -102,15 +98,6 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-
-    #   - name: Install Vercel CLI
-    #     run: npm install -g vercel
-
-    #   - name: Deploy to Vercel Preview (Staging)
-    #     working-directory: ./
-    #     run: vercel --token ${{ secrets.VERCEL_TOKEN }} --yes
-    #     env:
-    #       NODE_ENV: staging
 
   push-to-master:
     if: github.base_ref == 'master'
@@ -158,10 +145,6 @@ jobs:
           npm cache clean --force
           npm ci
           cat package.json  # Debug: show the actual package.json content
-
-      - name: List available scripts (debug)
-        working-directory: playwright-tests
-        run: npm run
 
       - name: Install Playwright browsers
         working-directory: playwright-tests
