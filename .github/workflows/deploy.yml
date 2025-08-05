@@ -7,56 +7,29 @@ on:
       - master
 
 jobs:
-  deploy:
-    name: Deploy to Vercel
+  deploy-staging:
+    if: github.ref_name == 'develop'
+    name: Deploy to Vercel Preview
     runs-on: ubuntu-latest
-    # steps:
-    #   - uses: actions/checkout@v4
-
-    #   - name: Deploy to Vercel
-    #     uses: amondnet/vercel-action@v25
-    #     with:
-    #       vercel-token: ${{ secrets.VERCEL_TOKEN }}
-    #       vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-    #       vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-    #       vercel-args: ${{ github.ref == 'refs/heads/master' && '--prod' || '' }}
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+      - name: Deploy to Vercel Preview
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+  deploy-prod:
+    if: github.ref_name == 'master'
+    name: Deploy to Vercel Prod
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-      #   - name: Pull Vercel Environment Information
-      #     run: vercel pull --yes --environment=${{ github.ref_name == 'master' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
-
-      #   - name: Build Project Artifacts
-      #     run: vercel build ${{ github.ref_name == 'master' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
-
-      #   - name: Deploy Project Artifacts to Vercel
-      #     run: vercel deploy --prebuilt ${{ github.ref_name == 'master' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Pull Vercel Environment Information
-        run: |
-          if [ "${{ github.ref_name }}" = "master" ]; then
-            vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-          else
-            vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
-          fi
-
-      - name: Build Project Artifacts
-        run: |
-          if [ "${{ github.ref_name }}" = "master" ]; then
-            vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-          else
-            vercel build --token=${{ secrets.VERCEL_TOKEN }}
-          fi
-
-      - name: Deploy Project Artifacts to Vercel
-        run: |
-          if [ "${{ github.ref_name }}" = "master" ]; then
-            vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
-          else
-            vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
-          fi
+      - name: Deploy to Vercel Prod
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
