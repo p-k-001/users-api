@@ -1,4 +1,4 @@
-name: backend CI/CD v0.1
+name: backend CI/CD v0.2
 
 on:
   push:
