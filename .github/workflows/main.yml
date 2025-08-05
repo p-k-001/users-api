@@ -1,7 +1,7 @@
 name: backend CI/CD v0.1
 
 on:
-  pull_request:
+  push:
     branches:
       - "develop"
       - "master"
@@ -161,3 +161,17 @@ jobs:
           name: playwright-report-staging
           path: playwright-report/
           retention-days: 5
+  deploy-master:
+    if: github.base_ref == 'master'
+    needs: push-to-master
+    name: Deploy to Vercel Production
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Vercel Production
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
