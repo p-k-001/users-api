@@ -183,7 +183,7 @@
           }
         ],
         "responses": {
-          "204": {
+          "200": {
             "description": "All users deleted"
           }
         }
