@@ -113,7 +113,7 @@ jobs:
 
       - name: Run SoapUI tests
         run: |
-          ./soapui/bin/testrunner.sh -r -j -f reports/ -P baseUrl=https://api-staging.yourapp.com soapui-tests/users-soapui-tests.xml
+          ./soapui/bin/testrunner.sh -r -j -f reports/ -P baseUrl=https://users-api-dev.projects.icanbreakit.eu soapui-tests/users-soapui-tests.xml
 
       - name: Checkout Playwright Tests Repo
         uses: actions/checkout@v4
