@@ -74,14 +74,12 @@ jobs:
 
       - name: Run Playwright tests
         working-directory: playwright-tests
-        env:
-          BASE_URL: http://localhost:3000
-        run: npm run test:ci:local
+        run: npm run test:api:local
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: playwright-report-local
-          path: playwright-report/
+          path: playwright-tests/playwright-report/
           retention-days: 5
 
   test-on-staging:
@@ -92,6 +90,9 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL_DEV }}
       JWT_SECRET: ${{ secrets.JWT_SECRET_DEV }}
       NODE_ENV: ${{ secrets.NODE_ENV_DEV }}
+      BASE_URL_API: ${{ secrets.BASE_URL_API_STAGING }}
+      BASE_URL_UI: ${{ secrets.BASE_URL_UI_STAGING }}
+      TEST_ENV: ${{ secrets.TEST_ENV_STAGING }}
 
     steps:
       - uses: actions/checkout@v4
@@ -137,12 +138,10 @@ jobs:
 
       - name: Run Playwright tests
         working-directory: playwright-tests
-        env:
-          BASE_URL: https://users-api-dev.projects.icanbreakit.eu
-        run: npm run test:ci:local
+        run: npm run test:api:staging
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: playwright-report-staging
-          path: playwright-report/
+          path: playwright-tests/playwright-report/
           retention-days: 5

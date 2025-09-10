@@ -573,7 +573,7 @@ app.delete("/users/:id", authenticateToken, async (req, res) => {
  *     security:
  *       - bearerAuth: []
  *     responses:
- *       204:
+ *       200:
  *         description: All users deleted
  */
 app.delete("/users", authenticateToken, async (req, res) => {
