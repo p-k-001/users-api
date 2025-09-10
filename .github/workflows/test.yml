@@ -90,6 +90,9 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL_DEV }}
       JWT_SECRET: ${{ secrets.JWT_SECRET_DEV }}
       NODE_ENV: ${{ secrets.NODE_ENV_DEV }}
+      BASE_URL_API: ${{ secrets.BASE_URL_API_STAGING }}
+      BASE_URL_UI: ${{ secrets.BASE_URL_UI_STAGING }}
+      TEST_ENV: ${{ secrets.TEST_ENV_STAGING }}
 
     steps:
       - uses: actions/checkout@v4
